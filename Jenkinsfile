@@ -5,7 +5,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'docker build -t mini-cicd-app:v1 .'
+                sh 'docker build -t mini-cicd-app:${BUILD_NUMBER} .'
             }
         }
 
@@ -18,8 +18,8 @@ pipeline {
                 )]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker tag mini-cicd-app:v1 $DOCKER_USER/mini-cicd-app:v1
-                        docker push $DOCKER_USER/mini-cicd-app:v1
+                        docker tag mini-cicd-app:${BUILD_NUMBER} $DOCKER_USER/mini-cicd-app:${BUILD_NUMBER}
+                        docker push $DOCKER_USER/mini-cicd-app:${BUILD_NUMBER}
                         docker logout
                     '''
                 }
@@ -30,7 +30,7 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f mini-cicd-test 2>/dev/null || true
-                    docker run -d --name mini-cicd-test -p 8082:80 mini-cicd-app:v1
+                    docker run -d --name mini-cicd-test -p 8082:80 mini-cicd-app:${BUILD_NUMBER}
 
                     sleep 3
 
