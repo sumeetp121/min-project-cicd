@@ -1,655 +1,895 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FlowCI — Continuous Integration & Delivery</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowForge CI/CD — Ship Faster, Break Nothing</title>
+<meta name="description" content="FlowForge — the modern CI/CD platform that automates build, test, and deployment pipelines.">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-  :root {
-    --bg: #0a0e1a;
-    --bg-2: #0f1629;
-    --card: rgba(255, 255, 255, 0.04);
-    --border: rgba(255, 255, 255, 0.09);
-    --text: #e8ecf5;
-    --muted: #93a0bd;
-    --accent: #6366f1;
-    --accent-2: #22d3ee;
-    --accent-3: #34d399;
-    --pink: #f472b6;
-    --radius: 18px;
-    --shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  :root{
+    --bg-deep:#05060a;
+    --bg-panel:#0d0f18;
+    --accent1:#7c3aed;
+    --accent2:#22d3ee;
+    --accent3:#f472b6;
+    --line:rgba(255,255,255,0.08);
+  }
+  *{scroll-behavior:smooth;}
+  body{
+    background:var(--bg-deep);
+    color:#e6e8f0;
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4,.font-display{font-family:'Space Grotesk',sans-serif;}
+  .font-mono{font-family:'JetBrains Mono',monospace;}
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-track{background:var(--bg-deep);}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(var(--accent1),var(--accent2));border-radius:10px;}
+
+  /* Gradient text */
+  .grad-text{
+    background:linear-gradient(90deg,#a78bfa,#22d3ee 50%,#f472b6);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    background-size:200% auto;
+    animation:shine 6s linear infinite;
+  }
+  @keyframes shine{to{background-position:200% center;}}
+
+  /* Animated blobs */
+  .blob{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(90px);
+    opacity:.45;
+    z-index:0;
+    animation:float 16s ease-in-out infinite;
+  }
+  @keyframes float{
+    0%,100%{transform:translate(0,0) scale(1);}
+    33%{transform:translate(40px,-60px) scale(1.1);}
+    66%{transform:translate(-30px,30px) scale(.95);}
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
-
-  /* Animated gradient background */
-  .bg-glow {
-    position: fixed;
-    inset: 0;
-    z-index: -2;
-    background:
-      radial-gradient(600px circle at 15% 20%, rgba(99,102,241,0.18), transparent 45%),
-      radial-gradient(700px circle at 85% 15%, rgba(34,211,238,0.14), transparent 45%),
-      radial-gradient(600px circle at 50% 90%, rgba(52,211,153,0.12), transparent 45%);
-  }
-  .bg-grid {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
+  /* Grid background */
+  .grid-bg{
     background-image:
-      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(circle at 50% 40%, black, transparent 80%);
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 20%, #000 40%, transparent 100%);
+    mask-image:radial-gradient(ellipse 70% 60% at 50% 20%, #000 40%, transparent 100%);
   }
 
-  a { color: inherit; text-decoration: none; }
+  /* Glass card */
+  .glass{
+    background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+    border:1px solid var(--line);
+    backdrop-filter:blur(14px);
+  }
+  .glass-card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.01));
+    border:1px solid var(--line);
+    transition:all .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .glass-card:hover{
+    transform:translateY(-8px);
+    border-color:rgba(124,58,237,.5);
+    box-shadow:0 20px 60px -20px rgba(124,58,237,.45);
+  }
 
-  .container { width: min(1160px, 92%); margin: 0 auto; }
+  .btn-primary{
+    background:linear-gradient(90deg,var(--accent1),#4f46e5);
+    box-shadow:0 8px 30px -8px rgba(124,58,237,.7);
+    transition:all .3s ease;
+  }
+  .btn-primary:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 40px -8px rgba(124,58,237,.9);
+  }
+  .btn-outline{
+    border:1px solid rgba(255,255,255,.18);
+    transition:all .3s ease;
+  }
+  .btn-outline:hover{
+    border-color:var(--accent2);
+    background:rgba(34,211,238,.08);
+    transform:translateY(-3px);
+  }
 
-  /* NAV */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(14px);
-    background: rgba(10,14,26,0.6);
-    border-bottom: 1px solid var(--border);
+  /* Nav */
+  #navbar{
+    transition:all .35s ease;
+    background:rgba(5,6,10,0);
+    border-bottom:1px solid transparent;
   }
-  nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 0;
+  #navbar.scrolled{
+    background:rgba(5,6,10,.75);
+    backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line);
   }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 800;
-    font-size: 1.25rem;
-    letter-spacing: -0.5px;
-  }
-  .logo-mark {
-    width: 34px; height: 34px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    display: grid; place-items: center;
-    box-shadow: 0 0 20px rgba(99,102,241,0.5);
-    animation: spin 8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .logo-mark svg { width: 20px; height: 20px; }
 
-  .nav-links { display: flex; gap: 30px; align-items: center; }
-  .nav-links a { color: var(--muted); font-size: 0.95rem; transition: color 0.2s; }
-  .nav-links a:hover { color: var(--text); }
+  /* Terminal window */
+  .terminal{
+    background:#0a0b12;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.7);
+  }
+  .dot{width:12px;height:12px;border-radius:50%;}
+  .term-line{opacity:0;animation:typein .5s forwards;}
+  @keyframes typein{ to{opacity:1;} }
+  .cursor-blink::after{
+    content:'▍';
+    animation:blink 1s steps(1) infinite;
+    color:#22d3ee;
+  }
+  @keyframes blink{50%{opacity:0;}}
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 22px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    border: none;
-    transition: transform 0.2s, box-shadow 0.2s;
+  /* Pipeline */
+  .pipe-stage{
+    position:relative;
+    z-index:1;
   }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    color: white;
-    box-shadow: 0 8px 24px -8px rgba(99,102,241,0.8);
+  .pipe-icon{
+    width:64px;height:64px;
+    border-radius:20px;
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.01));
+    transition:all .4s ease;
   }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -8px rgba(99,102,241,0.9); }
-  .btn-ghost {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
+  .pipe-stage.active .pipe-icon{
+    border-color:var(--accent2);
+    box-shadow:0 0 0 6px rgba(34,211,238,.08), 0 10px 30px -8px rgba(34,211,238,.6);
+    transform:scale(1.08);
   }
-  .btn-ghost:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .pipe-stage.done .pipe-icon{
+    border-color:rgba(34,197,94,.6);
+    background:linear-gradient(180deg, rgba(34,197,94,.15), rgba(34,197,94,.02));
+  }
+  .pipe-line{
+    position:absolute;top:32px;left:0;height:2px;
+    background:var(--line);
+    z-index:0;
+  }
+  .pipe-line-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--accent2),#22c55e);
+    transition:width 1.2s ease;
+  }
 
-  .nav-toggle { display: none; }
+  /* Stats counter */
+  .stat-num{font-variant-numeric:tabular-nums;}
 
-  /* HERO */
-  .hero { padding: 90px 0 70px; text-align: center; position: relative; }
-  .badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 7px 16px;
-    border-radius: 100px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-bottom: 26px;
+  /* Badge */
+  .badge{
+    background:rgba(124,58,237,.12);
+    border:1px solid rgba(124,58,237,.35);
   }
-  .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--accent-3);
-    box-shadow: 0 0 10px var(--accent-3);
-    animation: pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
-  .hero h1 {
-    font-size: clamp(2.4rem, 6vw, 4.4rem);
-    font-weight: 900;
-    letter-spacing: -2px;
-    line-height: 1.05;
-    margin-bottom: 22px;
+  /* Tabs */
+  .tab-btn.active{
+    color:#fff;
+    background:linear-gradient(90deg,rgba(124,58,237,.25),rgba(34,211,238,.15));
+    border-color:rgba(124,58,237,.5);
   }
-  .grad-text {
-    background: linear-gradient(120deg, var(--accent-2), var(--accent), var(--pink));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .hero p {
-    font-size: clamp(1rem, 2vw, 1.25rem);
-    color: var(--muted);
-    max-width: 620px;
-    margin: 0 auto 36px;
-  }
-  .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
-  /* PIPELINE */
-  .pipeline-wrap {
-    margin-top: 70px;
-    padding: 36px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
+  /* marquee */
+  .marquee-track{
+    display:flex;
+    width:max-content;
+    animation:marquee 26s linear infinite;
   }
-  .pipeline-wrap::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.06), transparent);
-    animation: sweep 3s linear infinite;
+  @keyframes marquee{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
   }
-  @keyframes sweep { from { transform: translateX(-100%);} to { transform: translateX(100%);} }
-  .pipeline-head {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
-    position: relative; z-index: 2;
-  }
-  .pipeline-head h3 { font-size: 1.05rem; }
-  .pipeline-head .status {
-    font-size: 0.82rem; color: var(--accent-3);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .pipeline {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 8px; position: relative; z-index: 2; flex-wrap: wrap;
-  }
-  .stage {
-    flex: 1; min-width: 120px;
-    text-align: center;
-    padding: 20px 10px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    position: relative;
-    opacity: 0.4;
-    transition: all 0.4s;
-  }
-  .stage.active {
-    opacity: 1;
-    border-color: var(--accent);
-    background: rgba(99,102,241,0.1);
-    box-shadow: 0 0 24px -6px rgba(99,102,241,0.6);
-  }
-  .stage.done { opacity: 1; border-color: var(--accent-3); background: rgba(52,211,153,0.08); }
-  .stage-icon {
-    width: 44px; height: 44px; margin: 0 auto 10px;
-    border-radius: 12px; display: grid; place-items: center;
-    background: rgba(255,255,255,0.05);
-    font-size: 1.3rem;
-  }
-  .stage.active .stage-icon { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
-  .stage.done .stage-icon { background: var(--accent-3); }
-  .stage h4 { font-size: 0.9rem; margin-bottom: 3px; }
-  .stage span { font-size: 0.75rem; color: var(--muted); }
-  .connector {
-    flex: 0 0 26px; height: 2px;
-    background: var(--border);
-    position: relative;
-  }
-  .connector.filled { background: linear-gradient(90deg, var(--accent-3), var(--accent)); }
 
-  /* STATS */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-top: 60px;
+  /* Reveal on scroll */
+  .reveal{
+    opacity:0;
+    transform:translateY(30px);
+    transition:all .8s cubic-bezier(.2,.7,.2,1);
   }
-  .stat {
-    text-align: center;
-    padding: 26px 16px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+  .reveal.show{
+    opacity:1;
+    transform:translateY(0);
   }
-  .stat .num {
-    font-size: 2.3rem; font-weight: 900;
-    background: linear-gradient(120deg, var(--accent-2), var(--accent));
-    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .stat .label { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
 
-  /* SECTION HEADINGS */
-  section { padding: 80px 0; }
-  .sec-head { text-align: center; max-width: 640px; margin: 0 auto 54px; }
-  .sec-head .eyebrow {
-    text-transform: uppercase; letter-spacing: 2px;
-    font-size: 0.8rem; color: var(--accent-2); font-weight: 700; margin-bottom: 12px;
+  .glow-line{
+    height:1px;
+    background:linear-gradient(90deg,transparent,rgba(124,58,237,.6),rgba(34,211,238,.6),transparent);
   }
-  .sec-head h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -1px; }
-  .sec-head p { color: var(--muted); margin-top: 14px; }
 
-  /* FEATURES */
-  .features {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-  .feature {
-    padding: 30px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    transition: transform 0.3s, border-color 0.3s, background 0.3s;
-  }
-  .feature:hover {
-    transform: translateY(-6px);
-    border-color: var(--accent);
-    background: rgba(99,102,241,0.06);
-  }
-  .feature-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    display: grid; place-items: center;
-    margin-bottom: 18px; font-size: 1.5rem;
-    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(34,211,238,0.25));
-  }
-  .feature h3 { font-size: 1.2rem; margin-bottom: 10px; }
-  .feature p { color: var(--muted); font-size: 0.95rem; }
+  input::placeholder{color:#8a8fa3;}
 
-  /* CODE / WORKFLOW */
-  .workflow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 50px;
-    align-items: center;
-  }
-  .workflow-text h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 18px; }
-  .workflow-text p { color: var(--muted); margin-bottom: 24px; }
-  .check-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
-  .check-list li { display: flex; gap: 12px; align-items: flex-start; }
-  .check-list .tick {
-    flex: 0 0 24px; width: 24px; height: 24px; border-radius: 50%;
-    background: rgba(52,211,153,0.15); color: var(--accent-3);
-    display: grid; place-items: center; font-size: 0.8rem; font-weight: bold;
-    margin-top: 2px;
-  }
-  .code-card {
-    background: #0b1020;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-  }
-  .code-head {
-    display: flex; align-items: center; gap: 8px;
-    padding: 14px 18px;
-    background: rgba(255,255,255,0.03);
-    border-bottom: 1px solid var(--border);
-  }
-  .code-dot { width: 12px; height: 12px; border-radius: 50%; }
-  .code-title { margin-left: 12px; font-size: 0.85rem; color: var(--muted); }
-  pre {
-    padding: 22px;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 0.86rem;
-    line-height: 1.7;
-    overflow-x: auto;
-    color: #c9d4f0;
-  }
-  .c-key { color: #f472b6; }
-  .c-str { color: #34d399; }
-  .c-comment { color: #64748b; font-style: italic; }
-  .c-prop { color: #22d3ee; }
-
-  /* CTA */
-  .cta {
-    text-align: center;
-    padding: 64px 40px;
-    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(34,211,238,0.12));
-    border: 1px solid var(--border);
-    border-radius: 26px;
-    position: relative; overflow: hidden;
-  }
-  .cta h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 16px; }
-  .cta p { color: var(--muted); max-width: 500px; margin: 0 auto 30px; }
-
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 44px 0 30px;
-    margin-top: 40px;
-  }
-  .foot-grid {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 20px;
-  }
-  .foot-links { display: flex; gap: 26px; flex-wrap: wrap; }
-  .foot-links a { color: var(--muted); font-size: 0.9rem; transition: color 0.2s; }
-  .foot-links a:hover { color: var(--text); }
-  .copyright { color: var(--muted); font-size: 0.85rem; margin-top: 24px; text-align: center; }
-
-  /* reveal on scroll */
-  .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(.2,.8,.2,1); }
-  .reveal.show { opacity: 1; transform: none; }
-
-  /* RESPONSIVE */
-  @media (max-width: 860px) {
-    .nav-links { display: none; }
-    .stats { grid-template-columns: repeat(2, 1fr); }
-    .features { grid-template-columns: 1fr; }
-    .workflow { grid-template-columns: 1fr; }
-    .connector { display: none; }
-    .stage { min-width: 45%; }
-  }
+  .switch{width:52px;height:28px;border-radius:999px;background:#1c1f2b;position:relative;cursor:pointer;transition:.3s;}
+  .switch.on{background:linear-gradient(90deg,var(--accent1),var(--accent2));}
+  .switch .knob{width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:.3s;}
+  .switch.on .knob{left:27px;}
 </style>
 </head>
-<body>
-  <div class="bg-glow"></div>
-  <div class="bg-grid"></div>
+<body class="antialiased">
 
-  <!-- NAV -->
-  <header>
-    <div class="container">
-      <nav>
-        <div class="logo">
-          <div class="logo-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>
-          </div>
-          FlowCI
-        </div>
-        <div class="nav-links">
-          <a href="#features">Features</a>
-          <a href="#pipeline">Pipeline</a>
-          <a href="#workflow">Workflow</a>
-          <a href="#" class="btn btn-primary">Get Started</a>
-        </div>
-      </nav>
+<!-- NAVBAR -->
+<nav id="navbar" class="fixed top-0 left-0 w-full z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-violet-500/30">
+        <i class="fa-solid fa-diagram-project text-white text-sm"></i>
+      </div>
+      <span class="font-display font-bold text-lg tracking-tight">FlowForge</span>
+    </a>
+    <div class="hidden md:flex items-center gap-8 text-sm text-gray-300">
+      <a href="#features" class="hover:text-white transition">Features</a>
+      <a href="#pipeline" class="hover:text-white transition">Pipeline</a>
+      <a href="#workflow" class="hover:text-white transition">Workflow</a>
+      <a href="#pricing" class="hover:text-white transition">Pricing</a>
+      <a href="#faq" class="hover:text-white transition">FAQ</a>
     </div>
-  </header>
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="container">
-      <div class="badge"><span class="dot"></span> Ship code with confidence — every commit</div>
-      <h1>Automate your builds<br>from <span class="grad-text">commit to cloud</span></h1>
-      <p>FlowCI is a blazing-fast continuous integration & delivery platform that tests, builds, and deploys your applications — automatically, on every push.</p>
-      <div class="hero-btns">
-        <a href="#" class="btn btn-primary">Start Building Free →</a>
-        <a href="#pipeline" class="btn btn-ghost">▶ View Live Pipeline</a>
-      </div>
-
-      <!-- STATS -->
-      <div class="stats">
-        <div class="stat reveal"><div class="num" data-target="99.9" data-suffix="%">0</div><div class="label">Uptime SLA</div></div>
-        <div class="stat reveal"><div class="num" data-target="12" data-suffix="M+">0</div><div class="label">Builds / month</div></div>
-        <div class="stat reveal"><div class="num" data-target="45" data-suffix="s">0</div><div class="label">Avg. build time</div></div>
-        <div class="stat reveal"><div class="num" data-target="30" data-suffix="k">0</div><div class="label">Teams onboard</div></div>
-      </div>
+    <div class="hidden md:flex items-center gap-3">
+      <a href="#" class="text-sm text-gray-300 hover:text-white transition px-4 py-2">Sign in</a>
+      <a href="#pricing" class="btn-primary text-sm font-semibold px-5 py-2.5 rounded-full text-white">Get Started Free</a>
     </div>
-  </section>
+    <button id="menuBtn" class="md:hidden text-gray-200 text-xl"><i class="fa-solid fa-bars"></i></button>
+  </div>
+  <div id="mobileMenu" class="hidden md:hidden glass mx-4 rounded-2xl p-5 flex flex-col gap-4 text-sm text-gray-200">
+    <a href="#features" class="hover:text-white">Features</a>
+    <a href="#pipeline" class="hover:text-white">Pipeline</a>
+    <a href="#workflow" class="hover:text-white">Workflow</a>
+    <a href="#pricing" class="hover:text-white">Pricing</a>
+    <a href="#faq" class="hover:text-white">FAQ</a>
+    <a href="#pricing" class="btn-primary text-center font-semibold px-5 py-2.5 rounded-full text-white">Get Started Free</a>
+  </div>
+</nav>
 
-  <!-- PIPELINE -->
-  <section id="pipeline">
-    <div class="container">
-      <div class="sec-head reveal">
-        <div class="eyebrow">Live Pipeline</div>
-        <h2>Watch your code flow through the pipeline</h2>
-        <p>Every stage runs automatically. Fail fast, deploy faster.</p>
+<!-- HERO -->
+<header id="top" class="relative pt-40 pb-28 px-6 overflow-hidden">
+  <div class="absolute inset-0 grid-bg"></div>
+  <div class="blob w-[500px] h-[500px] bg-violet-600 top-[-100px] left-[-150px]"></div>
+  <div class="blob w-[450px] h-[450px] bg-cyan-500 top-[100px] right-[-150px]"></div>
+  <div class="blob w-[400px] h-[400px] bg-pink-500 bottom-[-200px] left-[30%]"></div>
+
+  <div class="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <div class="inline-flex items-center gap-2 badge rounded-full px-4 py-1.5 text-xs font-medium text-violet-300 mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        v4.2 — Now with AI-powered rollback detection
       </div>
-      <div class="pipeline-wrap reveal">
-        <div class="pipeline-head">
-          <h3>🚀 deploy-production #482</h3>
-          <div class="status"><span class="dot"></span> <span id="pipeStatus">Running...</span></div>
+      <h1 class="font-display text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight">
+        Ship code with
+        <span class="grad-text">zero fear,</span>
+        every single time.
+      </h1>
+      <p class="mt-6 text-lg text-gray-400 max-w-xl">
+        FlowForge automates your build, test, and deployment pipelines so your team merges, ships,
+        and scales without late-night rollbacks or manual deploy checklists.
+      </p>
+      <div class="mt-9 flex flex-wrap items-center gap-4">
+        <a href="#pricing" class="btn-primary text-white font-semibold px-7 py-3.5 rounded-full flex items-center gap-2">
+          Start Free Trial <i class="fa-solid fa-arrow-right text-sm"></i>
+        </a>
+        <a href="#pipeline" class="btn-outline font-semibold px-7 py-3.5 rounded-full flex items-center gap-2 text-gray-200">
+          <i class="fa-solid fa-play text-xs"></i> Watch Demo
+        </a>
+      </div>
+      <div class="mt-10 flex items-center gap-6 text-sm text-gray-500">
+        <div class="flex -space-x-3">
+          <img class="w-9 h-9 rounded-full border-2 border-[#05060a]" src="https://i.pravatar.cc/60?img=12">
+          <img class="w-9 h-9 rounded-full border-2 border-[#05060a]" src="https://i.pravatar.cc/60?img=32">
+          <img class="w-9 h-9 rounded-full border-2 border-[#05060a]" src="https://i.pravatar.cc/60?img=48">
+          <div class="w-9 h-9 rounded-full border-2 border-[#05060a] bg-violet-600 flex items-center justify-center text-xs text-white font-semibold">4k+</div>
         </div>
-        <div class="pipeline" id="pipeline">
-          <div class="stage" data-i="0">
-            <div class="stage-icon">📥</div>
-            <h4>Source</h4><span>Checkout</span>
-          </div>
-          <div class="connector"></div>
-          <div class="stage" data-i="1">
-            <div class="stage-icon">🔧</div>
-            <h4>Build</h4><span>Compile</span>
-          </div>
-          <div class="connector"></div>
-          <div class="stage" data-i="2">
-            <div class="stage-icon">🧪</div>
-            <h4>Test</h4><span>Unit + E2E</span>
-          </div>
-          <div class="connector"></div>
-          <div class="stage" data-i="3">
-            <div class="stage-icon">🔒</div>
-            <h4>Scan</h4><span>Security</span>
-          </div>
-          <div class="connector"></div>
-          <div class="stage" data-i="4">
-            <div class="stage-icon">🚀</div>
-            <h4>Deploy</h4><span>Production</span>
-          </div>
-        </div>
+        <p>Trusted by 4,000+ engineering teams worldwide</p>
       </div>
     </div>
-  </section>
 
-  <!-- FEATURES -->
-  <section id="features">
-    <div class="container">
-      <div class="sec-head reveal">
-        <div class="eyebrow">Why FlowCI</div>
-        <h2>Everything you need to deliver</h2>
-        <p>Powerful automation tools designed for modern engineering teams.</p>
+    <!-- Terminal mock -->
+    <div class="terminal p-5 relative">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="dot bg-red-500/80"></span>
+        <span class="dot bg-yellow-500/80"></span>
+        <span class="dot bg-green-500/80"></span>
+        <span class="ml-3 text-xs text-gray-500 font-mono">deploy.flowforge — production</span>
       </div>
-      <div class="features">
-        <div class="feature reveal">
-          <div class="feature-icon">⚡</div>
-          <h3>Lightning Fast</h3>
-          <p>Parallel job execution and intelligent caching cut build times by up to 70%. Get feedback in seconds, not minutes.</p>
-        </div>
-        <div class="feature reveal">
-          <div class="feature-icon">🔀</div>
-          <h3>Git Integration</h3>
-          <p>Native support for GitHub, GitLab & Bitbucket. Trigger pipelines on push, PR, tags, or schedule.</p>
-        </div>
-        <div class="feature reveal">
-          <div class="feature-icon">🐳</div>
-          <h3>Container Native</h3>
-          <p>Run every step in isolated Docker containers. Reproducible builds, zero "works on my machine" issues.</p>
-        </div>
-        <div class="feature reveal">
-          <div class="feature-icon">🔒</div>
-          <h3>Secure by Default</h3>
-          <p>Encrypted secrets, dependency scanning, and SAST checks built right into your pipeline.</p>
-        </div>
-        <div class="feature reveal">
-          <div class="feature-icon">📊</div>
-          <h3>Rich Insights</h3>
-          <p>Real-time dashboards, flaky-test detection, and detailed logs for every single run.</p>
-        </div>
-        <div class="feature reveal">
-          <div class="feature-icon">🌍</div>
-          <h3>Deploy Anywhere</h3>
-          <p>Ship to AWS, GCP, Azure, Kubernetes or your own servers with one-click rollbacks.</p>
-        </div>
+      <div id="termOutput" class="font-mono text-[13px] leading-6 space-y-1 min-h-[280px]"></div>
+    </div>
+  </div>
+
+  <!-- marquee -->
+  <div class="relative mt-24 max-w-7xl mx-auto">
+    <p class="text-center text-xs uppercase tracking-widest text-gray-500 mb-6">Integrates seamlessly with your stack</p>
+    <div class="overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
+      <div class="marquee-track gap-16 text-gray-500 text-3xl items-center">
+        <i class="fa-brands fa-github"></i><i class="fa-brands fa-gitlab"></i><i class="fa-brands fa-docker"></i>
+        <i class="fa-brands fa-aws"></i><i class="fa-brands fa-google"></i><i class="fa-brands fa-slack"></i>
+        <i class="fa-brands fa-jira"></i><i class="fa-brands fa-node-js"></i><i class="fa-brands fa-python"></i>
+        <i class="fa-brands fa-github"></i><i class="fa-brands fa-gitlab"></i><i class="fa-brands fa-docker"></i>
+        <i class="fa-brands fa-aws"></i><i class="fa-brands fa-google"></i><i class="fa-brands fa-slack"></i>
+        <i class="fa-brands fa-jira"></i><i class="fa-brands fa-node-js"></i><i class="fa-brands fa-python"></i>
       </div>
     </div>
-  </section>
+  </div>
+</header>
 
-  <!-- WORKFLOW / CODE -->
-  <section id="workflow">
-    <div class="container">
-      <div class="workflow">
-        <div class="workflow-text reveal">
-          <h2>Configure in minutes with simple YAML</h2>
-          <p>Define your entire pipeline as code. Version it, review it, and keep it right beside your app.</p>
-          <ul class="check-list">
-            <li><span class="tick">✓</span> Declarative, human-readable syntax</li>
-            <li><span class="tick">✓</span> Reusable templates & shared workflows</li>
-            <li><span class="tick">✓</span> Matrix builds across versions & platforms</li>
-            <li><span class="tick">✓</span> Conditional stages and manual approvals</li>
-          </ul>
+<!-- STATS -->
+<section class="relative py-16 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+    <div class="reveal">
+      <p class="font-display text-4xl md:text-5xl font-bold grad-text stat-num" data-target="128000">0</p>
+      <p class="text-gray-500 mt-2 text-sm">Deployments / day</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display text-4xl md:text-5xl font-bold grad-text stat-num" data-target="99" data-suffix=".98%">0</p>
+      <p class="text-gray-500 mt-2 text-sm">Pipeline uptime</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display text-4xl md:text-5xl font-bold grad-text stat-num" data-target="4200" data-suffix="+">0</p>
+      <p class="text-gray-500 mt-2 text-sm">Teams onboard</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display text-4xl md:text-5xl font-bold grad-text stat-num" data-target="73" data-suffix="%">0</p>
+      <p class="text-gray-500 mt-2 text-sm">Faster release cycles</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="relative py-28 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <span class="badge text-xs font-medium text-violet-300 px-4 py-1.5 rounded-full">Features</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-5">Everything your pipeline needs</h2>
+      <p class="text-gray-400 mt-4">From commit to production, FlowForge automates the entire delivery lifecycle with built-in safety nets.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center mb-5">
+          <i class="fa-solid fa-code-branch text-white"></i>
         </div>
-        <div class="code-card reveal">
-          <div class="code-head">
-            <span class="code-dot" style="background:#ff5f57"></span>
-            <span class="code-dot" style="background:#febc2e"></span>
-            <span class="code-dot" style="background:#28c840"></span>
-            <span class="code-title">.flowci.yml</span>
+        <h3 class="font-display font-semibold text-lg mb-2">Continuous Integration</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">Automatically build and test every commit and pull request across parallel runners in seconds.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mb-5">
+          <i class="fa-solid fa-rocket text-white"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">One-Click Deployments</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">Ship to staging or production with a single click, or automate deploys on every merge to main.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mb-5">
+          <i class="fa-solid fa-shield-halved text-white"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">Security Scanning</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">Catch vulnerabilities, leaked secrets, and outdated dependencies before they reach production.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-5">
+          <i class="fa-solid fa-arrows-rotate text-white"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">Instant Rollbacks</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">Detect anomalies in real time and roll back automatically before customers notice a thing.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mb-5">
+          <i class="fa-solid fa-chart-line text-white"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">Live Observability</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">Track build times, failure rates, and deployment frequency with real-time dashboards.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-500 flex items-center justify-center mb-5">
+          <i class="fa-solid fa-cubes text-white"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">Container Native</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">First-class support for Docker & Kubernetes with reusable, versioned build environments.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE VISUALIZATION -->
+<section id="pipeline" class="relative py-28 px-6 bg-gradient-to-b from-transparent via-[#0b0d16] to-transparent">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <span class="badge text-xs font-medium text-violet-300 px-4 py-1.5 rounded-full">Pipeline</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-5">Watch a deploy happen live</h2>
+      <p class="text-gray-400 mt-4">A simulated look at how FlowForge takes your code from commit to production.</p>
+    </div>
+
+    <div class="mt-20 reveal">
+      <div class="relative flex justify-between max-w-4xl mx-auto" id="pipelineTrack">
+        <div class="pipe-line w-full">
+          <div class="pipe-line-fill" id="pipeFill"></div>
+        </div>
+        <div class="pipe-stage flex flex-col items-center gap-3 w-1/5" data-stage="0">
+          <div class="pipe-icon"><i class="fa-solid fa-code text-violet-300"></i></div>
+          <p class="text-sm font-medium text-gray-300">Commit</p>
+        </div>
+        <div class="pipe-stage flex flex-col items-center gap-3 w-1/5" data-stage="1">
+          <div class="pipe-icon"><i class="fa-solid fa-hammer text-violet-300"></i></div>
+          <p class="text-sm font-medium text-gray-300">Build</p>
+        </div>
+        <div class="pipe-stage flex flex-col items-center gap-3 w-1/5" data-stage="2">
+          <div class="pipe-icon"><i class="fa-solid fa-vial text-violet-300"></i></div>
+          <p class="text-sm font-medium text-gray-300">Test</p>
+        </div>
+        <div class="pipe-stage flex flex-col items-center gap-3 w-1/5" data-stage="3">
+          <div class="pipe-icon"><i class="fa-solid fa-cloud-arrow-up text-violet-300"></i></div>
+          <p class="text-sm font-medium text-gray-300">Deploy</p>
+        </div>
+        <div class="pipe-stage flex flex-col items-center gap-3 w-1/5" data-stage="4">
+          <div class="pipe-icon"><i class="fa-solid fa-magnifying-glass-chart text-violet-300"></i></div>
+          <p class="text-sm font-medium text-gray-300">Monitor</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl mt-14 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div id="statusDot" class="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></div>
+          <p id="statusText" class="font-mono text-sm text-gray-300">Waiting to start pipeline…</p>
+        </div>
+        <button id="runPipeline" class="btn-primary text-white text-sm font-semibold px-6 py-3 rounded-full flex items-center gap-2">
+          <i class="fa-solid fa-play text-xs"></i> Run Pipeline
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFLOW TABS -->
+<section id="workflow" class="relative py-28 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <span class="badge text-xs font-medium text-violet-300 px-4 py-1.5 rounded-full">Workflow</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-5">Configure once, automate forever</h2>
+      <p class="text-gray-400 mt-4">Simple, declarative YAML pipelines that grow with your project.</p>
+    </div>
+
+    <div class="mt-12 flex flex-wrap justify-center gap-3 reveal">
+      <button class="tab-btn active px-5 py-2.5 rounded-full text-sm font-medium border border-white/10 text-gray-300 transition" data-tab="build">Build</button>
+      <button class="tab-btn px-5 py-2.5 rounded-full text-sm font-medium border border-white/10 text-gray-300 transition" data-tab="test">Test</button>
+      <button class="tab-btn px-5 py-2.5 rounded-full text-sm font-medium border border-white/10 text-gray-300 transition" data-tab="deploy">Deploy</button>
+    </div>
+
+    <div class="terminal mt-10 p-6 max-w-4xl mx-auto reveal">
+      <pre id="tabContent" class="font-mono text-[13px] text-gray-300 leading-7 overflow-x-auto"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="relative py-28 px-6 bg-gradient-to-b from-transparent via-[#0b0d16] to-transparent">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <span class="badge text-xs font-medium text-violet-300 px-4 py-1.5 rounded-full">Testimonials</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-5">Loved by engineering teams</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 mt-16">
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="flex gap-1 text-amber-400 mb-4">★★★★★</div>
+        <p class="text-gray-300 text-sm leading-relaxed">"FlowForge cut our deploy time from 40 minutes to under 3. The rollback detection alone has saved us multiple incidents."</p>
+        <div class="flex items-center gap-3 mt-6">
+          <img class="w-10 h-10 rounded-full" src="https://i.pravatar.cc/60?img=5">
+          <div>
+            <p class="text-sm font-semibold">Maya Chen</p>
+            <p class="text-xs text-gray-500">Head of Platform, Nubank</p>
           </div>
-<pre><span class="c-comment"># FlowCI pipeline configuration</span>
-<span class="c-prop">name</span>: <span class="c-str">deploy-production</span>
-<span class="c-prop">on</span>:
-  <span class="c-prop">push</span>:
-    <span class="c-prop">branches</span>: [<span class="c-str">main</span>]
-
-<span class="c-prop">jobs</span>:
-  <span class="c-prop">build</span>:
-    <span class="c-prop">runs-on</span>: <span class="c-str">ubuntu-latest</span>
-    <span class="c-prop">steps</span>:
-      - <span class="c-key">uses</span>: <span class="c-str">actions/checkout@v4</span>
-      - <span class="c-key">run</span>: <span class="c-str">npm ci</span>
-      - <span class="c-key">run</span>: <span class="c-str">npm test</span>
-      - <span class="c-key">run</span>: <span class="c-str">npm run build</span>
-
-  <span class="c-prop">deploy</span>:
-    <span class="c-prop">needs</span>: <span class="c-str">build</span>
-    <span class="c-prop">steps</span>:
-      - <span class="c-key">run</span>: <span class="c-str">flowci deploy --prod</span> 🚀</pre>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section>
-    <div class="container">
-      <div class="cta reveal">
-        <h2>Ready to ship faster?</h2>
-        <p>Join thousands of teams automating their delivery with FlowCI. No credit card required.</p>
-        <a href="#" class="btn btn-primary" style="font-size:1.05rem; padding:14px 30px;">Start Your Free Trial →</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer>
-    <div class="container">
-      <div class="foot-grid">
-        <div class="logo">
-          <div class="logo-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="flex gap-1 text-amber-400 mb-4">★★★★★</div>
+        <p class="text-gray-300 text-sm leading-relaxed">"Migrating from Jenkins was painless. Our pipelines are now readable YAML instead of a mess of Groovy scripts."</p>
+        <div class="flex items-center gap-3 mt-6">
+          <img class="w-10 h-10 rounded-full" src="https://i.pravatar.cc/60?img=15">
+          <div>
+            <p class="text-sm font-semibold">Daniel Osei</p>
+            <p class="text-xs text-gray-500">Staff Engineer, Linear</p>
           </div>
-          FlowCI
-        </div>
-        <div class="foot-links">
-          <a href="#">Docs</a>
-          <a href="#">Pricing</a>
-          <a href="#">Blog</a>
-          <a href="#">Status</a>
-          <a href="#">GitHub</a>
-          <a href="#">Support</a>
         </div>
       </div>
-      <div class="copyright">© 2026 FlowCI. Built for developers, by developers. All rights reserved.</div>
+      <div class="glass-card rounded-2xl p-7 reveal">
+        <div class="flex gap-1 text-amber-400 mb-4">★★★★★</div>
+        <p class="text-gray-300 text-sm leading-relaxed">"The observability dashboards give our whole org visibility into release health. It's become our source of truth."</p>
+        <div class="flex items-center gap-3 mt-6">
+          <img class="w-10 h-10 rounded-full" src="https://i.pravatar.cc/60?img=25">
+          <div>
+            <p class="text-sm font-semibold">Priya Raman</p>
+            <p class="text-xs text-gray-500">VP Engineering, Vercel-like Co.</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </footer>
+  </div>
+</section>
 
-  <script>
-    // Reveal on scroll
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
-    }, { threshold: 0.15 });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+<!-- PRICING -->
+<section id="pricing" class="relative py-28 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <span class="badge text-xs font-medium text-violet-300 px-4 py-1.5 rounded-full">Pricing</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-5">Simple pricing, no surprises</h2>
+      <p class="text-gray-400 mt-4">Start free. Scale as your pipelines grow.</p>
+    </div>
 
-    // Animated counters
-    const counted = new Set();
-    const cObserver = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting && !counted.has(e.target)) {
-          counted.add(e.target);
-          const el = e.target;
+    <div class="flex items-center justify-center gap-3 mt-10 reveal">
+      <span class="text-sm text-gray-400">Monthly</span>
+      <div class="switch" id="billingSwitch"><div class="knob"></div></div>
+      <span class="text-sm text-gray-400">Yearly <span class="text-emerald-400">(save 20%)</span></span>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 mt-14">
+      <div class="glass-card rounded-2xl p-8 reveal">
+        <h3 class="font-display font-semibold text-lg">Starter</h3>
+        <p class="text-gray-500 text-sm mt-1">For small teams & side projects</p>
+        <p class="mt-6"><span class="text-4xl font-display font-bold price" data-monthly="0" data-yearly="0">$0</span><span class="text-gray-500 text-sm">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-gray-400">
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>500 build minutes/mo</li>
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Unlimited public repos</li>
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Community support</li>
+        </ul>
+        <a href="#" class="btn-outline block text-center mt-8 py-3 rounded-full font-semibold text-gray-200">Get Started</a>
+      </div>
+
+      <div class="glass-card rounded-2xl p-8 reveal relative border-2 !border-violet-500/60 scale-105">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 to-cyan-400 text-xs font-semibold px-4 py-1 rounded-full text-white">Most Popular</span>
+        <h3 class="font-display font-semibold text-lg">Pro</h3>
+        <p class="text-gray-500 text-sm mt-1">For growing engineering teams</p>
+        <p class="mt-6"><span class="text-4xl font-display font-bold price" data-monthly="49" data-yearly="39">$49</span><span class="text-gray-500 text-sm">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-gray-400">
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>10,000 build minutes/mo</li>
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Parallel test execution</li>
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Automated rollbacks</li>
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Priority support</li>
+        </ul>
+        <a href="#" class="btn-primary block text-center mt-8 py-3 rounded-full font-semibold text-white">Start Free Trial</a>
+      </div>
+
+      <div class="glass-card rounded-2xl p-8 reveal">
+        <h3 class="font-display font-semibold text-lg">Enterprise</h3>
+        <p class="text-gray-500 text-sm mt-1">For orgs with advanced needs</p>
+        <p class="mt-6"><span class="text-4xl font-display font-bold">Custom</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-gray-400">
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Unlimited build minutes</li>
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Self-hosted runners</li>
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>SSO & audit logs</li>
+          <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Dedicated support</li>
+        </ul>
+        <a href="#" class="btn-outline block text-center mt-8 py-3 rounded-full font-semibold text-gray-200">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="relative py-28 px-6 bg-gradient-to-b from-transparent via-[#0b0d16] to-transparent">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center reveal">
+      <span class="badge text-xs font-medium text-violet-300 px-4 py-1.5 rounded-full">FAQ</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-5">Frequently asked questions</h2>
+    </div>
+    <div class="mt-12 space-y-4" id="faqList">
+      <div class="glass-card rounded-2xl p-6 reveal faq-item">
+        <button class="faq-q w-full flex items-center justify-between text-left font-semibold">
+          How does FlowForge integrate with GitHub or GitLab?
+          <i class="fa-solid fa-chevron-down text-gray-500 transition-transform"></i>
+        </button>
+        <p class="faq-a text-gray-400 text-sm mt-3 leading-relaxed max-h-0 overflow-hidden">Install our app from the GitHub or GitLab marketplace, authorize your org, and FlowForge automatically detects your repos and suggests a starter pipeline config.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 reveal faq-item">
+        <button class="faq-q w-full flex items-center justify-between text-left font-semibold">
+          Can I self-host FlowForge runners?
+          <i class="fa-solid fa-chevron-down text-gray-500 transition-transform"></i>
+        </button>
+        <p class="faq-a text-gray-400 text-sm mt-3 leading-relaxed max-h-0 overflow-hidden">Yes. Enterprise plans support self-hosted runners inside your VPC, giving you full control over compute, networking, and secrets.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 reveal faq-item">
+        <button class="faq-q w-full flex items-center justify-between text-left font-semibold">
+          What happens if a deployment fails?
+          <i class="fa-solid fa-chevron-down text-gray-500 transition-transform"></i>
+        </button>
+        <p class="faq-a text-gray-400 text-sm mt-3 leading-relaxed max-h-0 overflow-hidden">FlowForge monitors health checks and error rates post-deploy. If anomalies are detected, it automatically triggers a rollback to the last known good release.</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 reveal faq-item">
+        <button class="faq-q w-full flex items-center justify-between text-left font-semibold">
+          Is there a free plan?
+          <i class="fa-solid fa-chevron-down text-gray-500 transition-transform"></i>
+        </button>
+        <p class="faq-a text-gray-400 text-sm mt-3 leading-relaxed max-h-0 overflow-hidden">Absolutely — the Starter plan is free forever, including 500 build minutes a month, perfect for personal projects and small teams.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="relative py-24 px-6">
+  <div class="max-w-5xl mx-auto glass rounded-3xl p-14 text-center relative overflow-hidden reveal">
+    <div class="blob w-72 h-72 bg-violet-600 top-[-100px] left-[-80px]"></div>
+    <div class="blob w-72 h-72 bg-cyan-500 bottom-[-100px] right-[-80px]"></div>
+    <div class="relative">
+      <h2 class="font-display text-3xl md:text-4xl font-bold">Ready to automate your pipeline?</h2>
+      <p class="text-gray-400 mt-4 max-w-lg mx-auto">Join thousands of teams shipping faster and safer with FlowForge. No credit card required.</p>
+      <div class="mt-8 flex flex-wrap justify-center gap-4">
+        <a href="#" class="btn-primary text-white font-semibold px-7 py-3.5 rounded-full">Start Free Trial</a>
+        <a href="#" class="btn-outline font-semibold px-7 py-3.5 rounded-full text-gray-200">Talk to Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="relative border-t border-white/5 pt-16 pb-8 px-6">
+  <div class="max-w-7xl mx-auto grid md:grid-cols-5 gap-10">
+    <div class="md:col-span-2">
+      <a href="#top" class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center">
+          <i class="fa-solid fa-diagram-project text-white text-sm"></i>
+        </div>
+        <span class="font-display font-bold text-lg">FlowForge</span>
+      </a>
+      <p class="text-gray-500 text-sm mt-4 max-w-xs">The modern CI/CD platform for teams who ship fast without breaking things.</p>
+      <div class="flex gap-4 mt-6 text-gray-500">
+        <a href="#" class="hover:text-white transition"><i class="fa-brands fa-github text-lg"></i></a>
+        <a href="#" class="hover:text-white transition"><i class="fa-brands fa-x-twitter text-lg"></i></a>
+        <a href="#" class="hover:text-white transition"><i class="fa-brands fa-linkedin text-lg"></i></a>
+        <a href="#" class="hover:text-white transition"><i class="fa-brands fa-discord text-lg"></i></a>
+      </div>
+    </div>
+    <div>
+      <p class="font-semibold text-sm mb-4">Product</p>
+      <ul class="space-y-3 text-sm text-gray-500">
+        <li><a href="#features" class="hover:text-white transition">Features</a></li>
+        <li><a href="#pipeline" class="hover:text-white transition">Pipeline</a></li>
+        <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+        <li><a href="#" class="hover:text-white transition">Changelog</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="font-semibold text-sm mb-4">Company</p>
+      <ul class="space-y-3 text-sm text-gray-500">
+        <li><a href="#" class="hover:text-white transition">About</a></li>
+        <li><a href="#" class="hover:text-white transition">Careers</a></li>
+        <li><a href="#" class="hover:text-white transition">Blog</a></li>
+        <li><a href="#" class="hover:text-white transition">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="font-semibold text-sm mb-4">Stay updated</p>
+      <p class="text-gray-500 text-sm mb-4">Get pipeline tips & product news.</p>
+      <form class="flex gap-2">
+        <input type="email" placeholder="you@company.com" class="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm outline-none focus:border-violet-500">
+        <button class="btn-primary text-white px-4 rounded-full text-sm"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+  <div class="glow-line max-w-7xl mx-auto mt-12"></div>
+  <p class="text-center text-gray-600 text-xs mt-8">© 2026 FlowForge, Inc. All rights reserved. Built for demonstration purposes.</p>
+</footer>
+
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // Mobile menu
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+  // Reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('show');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // Stats counter
+  const statEls = document.querySelectorAll('.stat-num');
+  let statsAnimated = false;
+  const statsSection = document.querySelector('.stat-num')?.closest('section');
+  const statsIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !statsAnimated) {
+        statsAnimated = true;
+        statEls.forEach(el => {
           const target = parseFloat(el.dataset.target);
           const suffix = el.dataset.suffix || '';
-          const isFloat = target % 1 !== 0;
-          let cur = 0;
-          const step = target / 60;
-          const tick = () => {
-            cur += step;
-            if (cur >= target) { cur = target; }
-            el.textContent = (isFloat ? cur.toFixed(1) : Math.floor(cur)) + suffix;
-            if (cur < target) requestAnimationFrame(tick);
-          };
-          tick();
-        }
-      });
-    }, { threshold: 0.5 });
-    document.querySelectorAll('.num').forEach(el => cObserver.observe(el));
+          let current = 0;
+          const duration = 1800;
+          const start = performance.now();
+          function tick(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            current = target * eased;
+            el.textContent = (target % 1 === 0 ? Math.floor(current).toLocaleString() : current.toFixed(2)) + suffix;
+            if (progress < 1) requestAnimationFrame(tick);
+            else el.textContent = (target % 1 === 0 ? target.toLocaleString() : target.toFixed(2)) + suffix;
+          }
+          requestAnimationFrame(tick);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  if (statsSection) statsIO.observe(statsSection);
 
-    // Pipeline animation
-    const stages = document.querySelectorAll('.stage');
-    const connectors = document.querySelectorAll('.connector');
-    const statusEl = document.getElementById('pipeStatus');
-    let current = 0;
-    function runPipeline() {
-      stages.forEach(s => s.classList.remove('active', 'done'));
-      connectors.forEach(c => c.classList.remove('filled'));
-      current = 0;
-      statusEl.textContent = 'Running...';
-      statusEl.style.color = 'var(--accent-2)';
-      advance();
-    }
-    function advance() {
-      if (current > 0) {
-        stages[current - 1].classList.remove('active');
-        stages[current - 1].classList.add('done');
-        if (connectors[current - 1]) connectors[current - 1].classList.add('filled');
-      }
-      if (current < stages.length) {
-        stages[current].classList.add('active');
-        current++;
-        setTimeout(advance, 1100);
+  // Terminal typing simulation
+  const termLines = [
+    { text: '<span class="text-gray-500">$</span> git push origin main', delay: 0 },
+    { text: '<span class="text-cyan-400">→</span> Detected push to <span class="text-violet-300">main</span>, triggering pipeline #482', delay: 400 },
+    { text: '<span class="text-emerald-400">✔</span> Installing dependencies (3.2s)', delay: 1000 },
+    { text: '<span class="text-emerald-400">✔</span> Build completed successfully (8.1s)', delay: 1700 },
+    { text: '<span class="text-emerald-400">✔</span> 214 tests passed, 0 failed (12.4s)', delay: 2500 },
+    { text: '<span class="text-emerald-400">✔</span> Security scan clean, no vulnerabilities', delay: 3300 },
+    { text: '<span class="text-cyan-400">→</span> Deploying to <span class="text-violet-300">production</span>…', delay: 4000 },
+    { text: '<span class="text-emerald-400">✔</span> Deployment live at <span class="text-cyan-400">app.flowforge.dev</span>', delay: 4900 },
+    { text: '<span class="text-emerald-400 font-semibold">✔ Pipeline succeeded in 18.7s</span><span class="cursor-blink"></span>', delay: 5600 }
+  ];
+  const termOutput = document.getElementById('termOutput');
+  function playTerminal() {
+    termOutput.innerHTML = '';
+    termLines.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'term-line';
+      div.style.animationDelay = line.delay + 'ms';
+      div.innerHTML = line.text;
+      termOutput.appendChild(div);
+    });
+  }
+  playTerminal();
+  setInterval(playTerminal, 8000);
+
+  // Pipeline runner
+  const stages = document.querySelectorAll('.pipe-stage');
+  const pipeFill = document.getElementById('pipeFill');
+  const statusText = document.getElementById('statusText');
+  const statusDot = document.getElementById('statusDot');
+  const runBtn = document.getElementById('runPipeline');
+  const stageLabels = ['Committing code…', 'Building application…', 'Running test suite…', 'Deploying to production…', 'Monitoring release…', 'Pipeline succeeded ✔'];
+  let running = false;
+
+  function resetPipeline() {
+    stages.forEach(s => s.classList.remove('active', 'done'));
+    pipeFill.style.width = '0%';
+  }
+
+  function runPipeline() {
+    if (running) return;
+    running = true;
+    resetPipeline();
+    statusDot.className = 'w-3 h-3 rounded-full bg-yellow-400 animate-pulse';
+    runBtn.disabled = true;
+    runBtn.classList.add('opacity-60','cursor-not-allowed');
+
+    let step = 0;
+    const total = stages.length;
+    function next() {
+      if (step > 0) stages[step-1].classList.remove('active');
+      if (step > 0) stages[step-1].classList.add('done');
+      if (step < total) {
+        stages[step].classList.add('active');
+        statusText.textContent = stageLabels[step];
+        pipeFill.style.width = ((step) / (total-1) * 100) + '%';
+        step++;
+        setTimeout(next, 1100);
       } else {
-        statusEl.textContent = '✓ Passed';
-        statusEl.style.color = 'var(--accent-3)';
-        setTimeout(runPipeline, 2800);
+        pipeFill.style.width = '100%';
+        statusText.textContent = stageLabels[total];
+        statusDot.className = 'w-3 h-3 rounded-full bg-emerald-400';
+        running = false;
+        runBtn.disabled = false;
+        runBtn.classList.remove('opacity-60','cursor-not-allowed');
       }
     }
-    // start pipeline when visible
-    const pObs = new IntersectionObserver((entries, obs) => {
-      entries.forEach(e => { if (e.isIntersecting) { runPipeline(); obs.disconnect(); } });
-    }, { threshold: 0.3 });
-    pObs.observe(document.getElementById('pipeline'));
-  </script>
+    next();
+  }
+  runBtn.addEventListener('click', runPipeline);
+
+  // Workflow tabs
+  const tabContent = {
+    build: `name: build
+on: [push]
+jobs:
+  build:
+    runs-on: flowforge-ubuntu-latest
+    steps:
+      - uses: flowforge/checkout@v2
+      - name: Install dependencies
+        run: npm ci
+      - name: Build project
+        run: npm run build
+      - name: Cache artifacts
+        uses: flowforge/cache@v1
+        with:
+          path: dist/
+          key: build-\${{ github.sha }}`,
+    test: `name: test
+on: [pull_request]
+jobs:
+  test:
+    runs-on: flowforge-ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20]
+    steps:
+      - uses: flowforge/checkout@v2
+      - name: Run unit tests
+        run: npm test -- --coverage
+      - name: Run E2E tests
+        run: npm run e2e
+      - name: Upload coverage
+        uses: flowforge/coverage@v1`,
+    deploy: `name: deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: flowforge-ubuntu-latest
+    environment: production
+    steps:
+      - uses: flowforge/checkout@v2
+      - name: Deploy to production
+        uses: flowforge/deploy@v3
+        with:
+          target: production
+          strategy: blue-green
+          auto_rollback: true`
+  };
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabContentEl = document.getElementById('tabContent');
+  function setTab(name) {
+    tabButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    tabContentEl.textContent = tabContent[name];
+  }
+  tabButtons.forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+  setTab('build');
+
+  // Pricing billing switch
+  const billingSwitch = document.getElementById('billingSwitch');
+  const prices = document.querySelectorAll('.price');
+  billingSwitch.addEventListener('click', () => {
+    const yearly = billingSwitch.classList.toggle('on');
+    prices.forEach(p => {
+      const val = yearly ? p.dataset.yearly : p.dataset.monthly;
+      p.textContent = '$' + val;
+    });
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const q = item.querySelector('.faq-q');
+    const a = item.querySelector('.faq-a');
+    const icon = q.querySelector('i');
+    q.addEventListener('click', () => {
+      const isOpen = a.style.maxHeight && a.style.maxHeight !== '0px';
+      document.querySelectorAll('.faq-a').forEach(el => el.style.maxHeight = '0px');
+      document.querySelectorAll('.faq-q i').forEach(i => i.style.transform = 'rotate(0deg)');
+      if (!isOpen) {
+        a.style.maxHeight = a.scrollHeight + 'px';
+        icon.style.transform = 'rotate(180deg)';
+      }
+    });
+  });
+</script>
 </body>
 </html>
