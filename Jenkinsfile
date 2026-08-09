@@ -44,7 +44,12 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    kubectl --kubeconfig=/var/lib/jenkins/.kube/config apply -f k8s/
+                    kubectl --kubeconfig=/var/lib/jenkins/.kube/config \
+                    set image deployment/mini-cicd-app \
+                    mini-cicd-app=sumeetp121/mini-cicd-app:${BUILD_NUMBER}
+
+                    kubectl --kubeconfig=/var/lib/jenkins/.kube/config \
+                    rollout status deployment/mini-cicd-app
                 '''
             }
         }
