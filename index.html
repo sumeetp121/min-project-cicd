@@ -1,1 +1,655 @@
-<h1>Hello from CI/CD - SCM Polling</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FlowCI — Continuous Integration & Delivery</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-2: #0f1629;
+    --card: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.09);
+    --text: #e8ecf5;
+    --muted: #93a0bd;
+    --accent: #6366f1;
+    --accent-2: #22d3ee;
+    --accent-3: #34d399;
+    --pink: #f472b6;
+    --radius: 18px;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Animated gradient background */
+  .bg-glow {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(600px circle at 15% 20%, rgba(99,102,241,0.18), transparent 45%),
+      radial-gradient(700px circle at 85% 15%, rgba(34,211,238,0.14), transparent 45%),
+      radial-gradient(600px circle at 50% 90%, rgba(52,211,153,0.12), transparent 45%);
+  }
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(circle at 50% 40%, black, transparent 80%);
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .container { width: min(1160px, 92%); margin: 0 auto; }
+
+  /* NAV */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(14px);
+    background: rgba(10,14,26,0.6);
+    border-bottom: 1px solid var(--border);
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+  }
+  .logo-mark {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center;
+    box-shadow: 0 0 20px rgba(99,102,241,0.5);
+    animation: spin 8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .logo-mark svg { width: 20px; height: 20px; }
+
+  .nav-links { display: flex; gap: 30px; align-items: center; }
+  .nav-links a { color: var(--muted); font-size: 0.95rem; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    box-shadow: 0 8px 24px -8px rgba(99,102,241,0.8);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -8px rgba(99,102,241,0.9); }
+  .btn-ghost {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+  .nav-toggle { display: none; }
+
+  /* HERO */
+  .hero { padding: 90px 0 70px; text-align: center; position: relative; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 16px;
+    border-radius: 100px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 26px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-3);
+    box-shadow: 0 0 10px var(--accent-3);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.05;
+    margin-bottom: 22px;
+  }
+  .grad-text {
+    background: linear-gradient(120deg, var(--accent-2), var(--accent), var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--muted);
+    max-width: 620px;
+    margin: 0 auto 36px;
+  }
+  .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  /* PIPELINE */
+  .pipeline-wrap {
+    margin-top: 70px;
+    padding: 36px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .pipeline-wrap::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.06), transparent);
+    animation: sweep 3s linear infinite;
+  }
+  @keyframes sweep { from { transform: translateX(-100%);} to { transform: translateX(100%);} }
+  .pipeline-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+    position: relative; z-index: 2;
+  }
+  .pipeline-head h3 { font-size: 1.05rem; }
+  .pipeline-head .status {
+    font-size: 0.82rem; color: var(--accent-3);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pipeline {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; position: relative; z-index: 2; flex-wrap: wrap;
+  }
+  .stage {
+    flex: 1; min-width: 120px;
+    text-align: center;
+    padding: 20px 10px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    position: relative;
+    opacity: 0.4;
+    transition: all 0.4s;
+  }
+  .stage.active {
+    opacity: 1;
+    border-color: var(--accent);
+    background: rgba(99,102,241,0.1);
+    box-shadow: 0 0 24px -6px rgba(99,102,241,0.6);
+  }
+  .stage.done { opacity: 1; border-color: var(--accent-3); background: rgba(52,211,153,0.08); }
+  .stage-icon {
+    width: 44px; height: 44px; margin: 0 auto 10px;
+    border-radius: 12px; display: grid; place-items: center;
+    background: rgba(255,255,255,0.05);
+    font-size: 1.3rem;
+  }
+  .stage.active .stage-icon { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+  .stage.done .stage-icon { background: var(--accent-3); }
+  .stage h4 { font-size: 0.9rem; margin-bottom: 3px; }
+  .stage span { font-size: 0.75rem; color: var(--muted); }
+  .connector {
+    flex: 0 0 26px; height: 2px;
+    background: var(--border);
+    position: relative;
+  }
+  .connector.filled { background: linear-gradient(90deg, var(--accent-3), var(--accent)); }
+
+  /* STATS */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 60px;
+  }
+  .stat {
+    text-align: center;
+    padding: 26px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .stat .num {
+    font-size: 2.3rem; font-weight: 900;
+    background: linear-gradient(120deg, var(--accent-2), var(--accent));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat .label { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  /* SECTION HEADINGS */
+  section { padding: 80px 0; }
+  .sec-head { text-align: center; max-width: 640px; margin: 0 auto 54px; }
+  .sec-head .eyebrow {
+    text-transform: uppercase; letter-spacing: 2px;
+    font-size: 0.8rem; color: var(--accent-2); font-weight: 700; margin-bottom: 12px;
+  }
+  .sec-head h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -1px; }
+  .sec-head p { color: var(--muted); margin-top: 14px; }
+
+  /* FEATURES */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .feature {
+    padding: 30px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: transform 0.3s, border-color 0.3s, background 0.3s;
+  }
+  .feature:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent);
+    background: rgba(99,102,241,0.06);
+  }
+  .feature-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: grid; place-items: center;
+    margin-bottom: 18px; font-size: 1.5rem;
+    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(34,211,238,0.25));
+  }
+  .feature h3 { font-size: 1.2rem; margin-bottom: 10px; }
+  .feature p { color: var(--muted); font-size: 0.95rem; }
+
+  /* CODE / WORKFLOW */
+  .workflow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .workflow-text h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 18px; }
+  .workflow-text p { color: var(--muted); margin-bottom: 24px; }
+  .check-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .check-list li { display: flex; gap: 12px; align-items: flex-start; }
+  .check-list .tick {
+    flex: 0 0 24px; width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(52,211,153,0.15); color: var(--accent-3);
+    display: grid; place-items: center; font-size: 0.8rem; font-weight: bold;
+    margin-top: 2px;
+  }
+  .code-card {
+    background: #0b1020;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .code-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .code-title { margin-left: 12px; font-size: 0.85rem; color: var(--muted); }
+  pre {
+    padding: 22px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: #c9d4f0;
+  }
+  .c-key { color: #f472b6; }
+  .c-str { color: #34d399; }
+  .c-comment { color: #64748b; font-style: italic; }
+  .c-prop { color: #22d3ee; }
+
+  /* CTA */
+  .cta {
+    text-align: center;
+    padding: 64px 40px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(34,211,238,0.12));
+    border: 1px solid var(--border);
+    border-radius: 26px;
+    position: relative; overflow: hidden;
+  }
+  .cta h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 16px; }
+  .cta p { color: var(--muted); max-width: 500px; margin: 0 auto 30px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 44px 0 30px;
+    margin-top: 40px;
+  }
+  .foot-grid {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 20px;
+  }
+  .foot-links { display: flex; gap: 26px; flex-wrap: wrap; }
+  .foot-links a { color: var(--muted); font-size: 0.9rem; transition: color 0.2s; }
+  .foot-links a:hover { color: var(--text); }
+  .copyright { color: var(--muted); font-size: 0.85rem; margin-top: 24px; text-align: center; }
+
+  /* reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(.2,.8,.2,1); }
+  .reveal.show { opacity: 1; transform: none; }
+
+  /* RESPONSIVE */
+  @media (max-width: 860px) {
+    .nav-links { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .features { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .connector { display: none; }
+    .stage { min-width: 45%; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+
+  <!-- NAV -->
+  <header>
+    <div class="container">
+      <nav>
+        <div class="logo">
+          <div class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>
+          </div>
+          FlowCI
+        </div>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#pipeline">Pipeline</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#" class="btn btn-primary">Get Started</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="badge"><span class="dot"></span> Ship code with confidence — every commit</div>
+      <h1>Automate your builds<br>from <span class="grad-text">commit to cloud</span></h1>
+      <p>FlowCI is a blazing-fast continuous integration & delivery platform that tests, builds, and deploys your applications — automatically, on every push.</p>
+      <div class="hero-btns">
+        <a href="#" class="btn btn-primary">Start Building Free →</a>
+        <a href="#pipeline" class="btn btn-ghost">▶ View Live Pipeline</a>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats">
+        <div class="stat reveal"><div class="num" data-target="99.9" data-suffix="%">0</div><div class="label">Uptime SLA</div></div>
+        <div class="stat reveal"><div class="num" data-target="12" data-suffix="M+">0</div><div class="label">Builds / month</div></div>
+        <div class="stat reveal"><div class="num" data-target="45" data-suffix="s">0</div><div class="label">Avg. build time</div></div>
+        <div class="stat reveal"><div class="num" data-target="30" data-suffix="k">0</div><div class="label">Teams onboard</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section id="pipeline">
+    <div class="container">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Live Pipeline</div>
+        <h2>Watch your code flow through the pipeline</h2>
+        <p>Every stage runs automatically. Fail fast, deploy faster.</p>
+      </div>
+      <div class="pipeline-wrap reveal">
+        <div class="pipeline-head">
+          <h3>🚀 deploy-production #482</h3>
+          <div class="status"><span class="dot"></span> <span id="pipeStatus">Running...</span></div>
+        </div>
+        <div class="pipeline" id="pipeline">
+          <div class="stage" data-i="0">
+            <div class="stage-icon">📥</div>
+            <h4>Source</h4><span>Checkout</span>
+          </div>
+          <div class="connector"></div>
+          <div class="stage" data-i="1">
+            <div class="stage-icon">🔧</div>
+            <h4>Build</h4><span>Compile</span>
+          </div>
+          <div class="connector"></div>
+          <div class="stage" data-i="2">
+            <div class="stage-icon">🧪</div>
+            <h4>Test</h4><span>Unit + E2E</span>
+          </div>
+          <div class="connector"></div>
+          <div class="stage" data-i="3">
+            <div class="stage-icon">🔒</div>
+            <h4>Scan</h4><span>Security</span>
+          </div>
+          <div class="connector"></div>
+          <div class="stage" data-i="4">
+            <div class="stage-icon">🚀</div>
+            <h4>Deploy</h4><span>Production</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="container">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Why FlowCI</div>
+        <h2>Everything you need to deliver</h2>
+        <p>Powerful automation tools designed for modern engineering teams.</p>
+      </div>
+      <div class="features">
+        <div class="feature reveal">
+          <div class="feature-icon">⚡</div>
+          <h3>Lightning Fast</h3>
+          <p>Parallel job execution and intelligent caching cut build times by up to 70%. Get feedback in seconds, not minutes.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-icon">🔀</div>
+          <h3>Git Integration</h3>
+          <p>Native support for GitHub, GitLab & Bitbucket. Trigger pipelines on push, PR, tags, or schedule.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-icon">🐳</div>
+          <h3>Container Native</h3>
+          <p>Run every step in isolated Docker containers. Reproducible builds, zero "works on my machine" issues.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-icon">🔒</div>
+          <h3>Secure by Default</h3>
+          <p>Encrypted secrets, dependency scanning, and SAST checks built right into your pipeline.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-icon">📊</div>
+          <h3>Rich Insights</h3>
+          <p>Real-time dashboards, flaky-test detection, and detailed logs for every single run.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-icon">🌍</div>
+          <h3>Deploy Anywhere</h3>
+          <p>Ship to AWS, GCP, Azure, Kubernetes or your own servers with one-click rollbacks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKFLOW / CODE -->
+  <section id="workflow">
+    <div class="container">
+      <div class="workflow">
+        <div class="workflow-text reveal">
+          <h2>Configure in minutes with simple YAML</h2>
+          <p>Define your entire pipeline as code. Version it, review it, and keep it right beside your app.</p>
+          <ul class="check-list">
+            <li><span class="tick">✓</span> Declarative, human-readable syntax</li>
+            <li><span class="tick">✓</span> Reusable templates & shared workflows</li>
+            <li><span class="tick">✓</span> Matrix builds across versions & platforms</li>
+            <li><span class="tick">✓</span> Conditional stages and manual approvals</li>
+          </ul>
+        </div>
+        <div class="code-card reveal">
+          <div class="code-head">
+            <span class="code-dot" style="background:#ff5f57"></span>
+            <span class="code-dot" style="background:#febc2e"></span>
+            <span class="code-dot" style="background:#28c840"></span>
+            <span class="code-title">.flowci.yml</span>
+          </div>
+<pre><span class="c-comment"># FlowCI pipeline configuration</span>
+<span class="c-prop">name</span>: <span class="c-str">deploy-production</span>
+<span class="c-prop">on</span>:
+  <span class="c-prop">push</span>:
+    <span class="c-prop">branches</span>: [<span class="c-str">main</span>]
+
+<span class="c-prop">jobs</span>:
+  <span class="c-prop">build</span>:
+    <span class="c-prop">runs-on</span>: <span class="c-str">ubuntu-latest</span>
+    <span class="c-prop">steps</span>:
+      - <span class="c-key">uses</span>: <span class="c-str">actions/checkout@v4</span>
+      - <span class="c-key">run</span>: <span class="c-str">npm ci</span>
+      - <span class="c-key">run</span>: <span class="c-str">npm test</span>
+      - <span class="c-key">run</span>: <span class="c-str">npm run build</span>
+
+  <span class="c-prop">deploy</span>:
+    <span class="c-prop">needs</span>: <span class="c-str">build</span>
+    <span class="c-prop">steps</span>:
+      - <span class="c-key">run</span>: <span class="c-str">flowci deploy --prod</span> 🚀</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section>
+    <div class="container">
+      <div class="cta reveal">
+        <h2>Ready to ship faster?</h2>
+        <p>Join thousands of teams automating their delivery with FlowCI. No credit card required.</p>
+        <a href="#" class="btn btn-primary" style="font-size:1.05rem; padding:14px 30px;">Start Your Free Trial →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="foot-grid">
+        <div class="logo">
+          <div class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>
+          </div>
+          FlowCI
+        </div>
+        <div class="foot-links">
+          <a href="#">Docs</a>
+          <a href="#">Pricing</a>
+          <a href="#">Blog</a>
+          <a href="#">Status</a>
+          <a href="#">GitHub</a>
+          <a href="#">Support</a>
+        </div>
+      </div>
+      <div class="copyright">© 2026 FlowCI. Built for developers, by developers. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Reveal on scroll
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Animated counters
+    const counted = new Set();
+    const cObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !counted.has(e.target)) {
+          counted.add(e.target);
+          const el = e.target;
+          const target = parseFloat(el.dataset.target);
+          const suffix = el.dataset.suffix || '';
+          const isFloat = target % 1 !== 0;
+          let cur = 0;
+          const step = target / 60;
+          const tick = () => {
+            cur += step;
+            if (cur >= target) { cur = target; }
+            el.textContent = (isFloat ? cur.toFixed(1) : Math.floor(cur)) + suffix;
+            if (cur < target) requestAnimationFrame(tick);
+          };
+          tick();
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.num').forEach(el => cObserver.observe(el));
+
+    // Pipeline animation
+    const stages = document.querySelectorAll('.stage');
+    const connectors = document.querySelectorAll('.connector');
+    const statusEl = document.getElementById('pipeStatus');
+    let current = 0;
+    function runPipeline() {
+      stages.forEach(s => s.classList.remove('active', 'done'));
+      connectors.forEach(c => c.classList.remove('filled'));
+      current = 0;
+      statusEl.textContent = 'Running...';
+      statusEl.style.color = 'var(--accent-2)';
+      advance();
+    }
+    function advance() {
+      if (current > 0) {
+        stages[current - 1].classList.remove('active');
+        stages[current - 1].classList.add('done');
+        if (connectors[current - 1]) connectors[current - 1].classList.add('filled');
+      }
+      if (current < stages.length) {
+        stages[current].classList.add('active');
+        current++;
+        setTimeout(advance, 1100);
+      } else {
+        statusEl.textContent = '✓ Passed';
+        statusEl.style.color = 'var(--accent-3)';
+        setTimeout(runPipeline, 2800);
+      }
+    }
+    // start pipeline when visible
+    const pObs = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => { if (e.isIntersecting) { runPipeline(); obs.disconnect(); } });
+    }, { threshold: 0.3 });
+    pObs.observe(document.getElementById('pipeline'));
+  </script>
+</body>
+</html>
