@@ -28,7 +28,16 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo 'Running tests'
+                sh '''
+                    docker rm -f mini-cicd-test 2>/dev/null || true
+                    docker run -d --name mini-cicd-test -p 8082:80 mini-cicd-app:v1
+
+                    sleep 3
+
+                    curl -f http://localhost:8082
+
+                    docker rm -f mini-cicd-test
+                '''
             }
         }
 
