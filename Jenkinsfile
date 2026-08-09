@@ -43,8 +43,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Deploying application'
+                sh '''
+                    kubectl --kubeconfig=/var/lib/jenkins/.kube/config apply -f k8s/
+                '''
             }
         }
-    }
 }
